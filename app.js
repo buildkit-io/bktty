@@ -103,7 +103,7 @@ io.on('connection', function(socket){
 
     var term;
     if (process.getuid() == 0) {
-        term = pty.spawn('/bin/login', [], {
+        term = pty.spawn('/bin/bash', [], {
             name: 'xterm-256color',
             cols: 80,
             rows: 30

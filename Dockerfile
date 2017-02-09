@@ -1,13 +1,13 @@
 FROM node:0.10.38
-MAINTAINER Nathan LeClaire <nathan@docker.com>
+MAINTAINER Stefan Dimitrov <stefan@dimitrov.li>
 
 ADD . /app
 WORKDIR /app
 RUN npm install
+RUN add-apt-repository "deb https://cli-assets.heroku.com/branches/stable/apt ./"
+RUN curl -L https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
 RUN apt-get update
-RUN apt-get install -y vim
-RUN useradd -d /home/term -m -s /bin/bash term
-RUN echo 'term:term' | chpasswd
+RUN apt-get install -y vim git heroku
 
 EXPOSE 3000
 
