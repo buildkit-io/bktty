@@ -18,7 +18,7 @@ RUN wget https://get.docker.com/builds/Linux/x86_64/docker-1.12.5.tgz
 RUN tar xzvf docker-1.12.5.tgz
 RUN rm -f docker-1.12.5.tgz
 RUN cp docker/docker /usr/local/bin/
-RUM rm -rf docker/
+RUN rm -rf docker/
 
 EXPOSE 3000
 
