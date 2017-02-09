@@ -16,50 +16,15 @@ var opts = require('optimist')
             demand: false,
             description: 'path to SSL certificate'
         },
-        sshhost: {
-            demand: false,
-            description: 'ssh server host'
-        },
-        sshport: {
-            demand: false,
-            description: 'ssh server port'
-        },
-        sshuser: {
-            demand: false,
-            description: 'ssh user'
-        },
-        sshauth: {
-            demand: false,
-            description: 'defaults to "password", you can use "publickey,password" instead'
-        },
         port: {
             demand: true,
             alias: 'p',
-            description: 'wetty listen port'
+            description: 'bktty listen port'
         },
     }).boolean('allow_discovery').argv;
 
 var runhttps = false;
-var sshport = 22;
-var sshhost = 'localhost';
-var sshauth = 'password';
-var globalsshuser = '';
-
-if (opts.sshport) {
-    sshport = opts.sshport;
-}
-
-if (opts.sshhost) {
-    sshhost = opts.sshhost;
-}
-
-if (opts.sshauth) {
-	sshauth = opts.sshauth
-}
-
-if (opts.sshuser) {
-    globalsshuser = opts.sshuser;
-}
+var dockerhost = null;
 
 if (opts.sslkey && opts.sslcert) {
     runhttps = true;
@@ -75,7 +40,7 @@ process.on('uncaughtException', function(e) {
 var httpserv;
 
 var app = express();
-app.get('/wetty/ssh/:user', function(req, res) {
+app.get('/wetty/docker/:user', function(req, res) {
     res.sendfile(__dirname + '/public/wetty/index.html');
 });
 app.use('/', express.static(path.join(__dirname, 'public')));
@@ -92,35 +57,32 @@ if (runhttps) {
 
 var io = server(httpserv,{path: '/wetty/socket.io'});
 io.on('connection', function(socket){
-    var sshuser = '';
     var request = socket.request;
     console.log((new Date()) + ' Connection accepted.');
-    if (match = request.headers.referer.match('/wetty/ssh/.+$')) {
-        sshuser = match[0].replace('/wetty/ssh/', '') + '@';
-    } else if (globalsshuser) {
-        sshuser = globalsshuser + '@';
+    if (match = request.headers.referer.match('/wetty/docker/.+$')) {
+        dockerhost = match[0].replace('/wetty/docker/', '') + '@';
     }
 
     var term;
-    if (process.getuid() == 0) {
+    if (!dockerhost) {
         term = pty.spawn('/bin/bash', [], {
             name: 'xterm-256color',
             cols: 80,
             rows: 30
         });
     } else {
-        term = pty.spawn('ssh', [sshuser + sshhost, '-p', sshport, '-o', 'PreferredAuthentications=' + sshauth], {
+        term = pty.spawn('/usr/local/bin/docker', ['exec', '-it', dockerhost, '/bin/bash'], {
             name: 'xterm-256color',
             cols: 80,
             rows: 30
         });
+        console.log((new Date()) + " PID=" + term.pid + " STARTED for container =" + dockerhost);
     }
-    console.log((new Date()) + " PID=" + term.pid + " STARTED on behalf of user=" + sshuser)
     term.on('data', function(data) {
         socket.emit('output', data);
     });
     term.on('exit', function(code) {
-        console.log((new Date()) + " PID=" + term.pid + " ENDED")
+        console.log((new Date()) + " PID=" + term.pid + " ENDED");
     });
     socket.on('resize', function(data) {
         term.resize(data.col, data.row);
@@ -131,4 +93,4 @@ io.on('connection', function(socket){
     socket.on('disconnect', function() {
         term.end();
     });
-})
+});
