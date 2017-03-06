@@ -1,4 +1,4 @@
-FROM node:0.10.38
+FROM node:latest
 MAINTAINER Stefan Dimitrov <stefan@dimitrov.li>
 
 ADD . /app
