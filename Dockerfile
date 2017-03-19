@@ -2,7 +2,7 @@ FROM node:latest
 MAINTAINER Stefan Dimitrov <stefan@dimitrov.li>
 
 ADD . /app
-WORKDIR /workspace
+WORKDIR /app
 RUN npm install
 RUN apt-get update
 
