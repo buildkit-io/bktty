@@ -60,7 +60,7 @@ io.on('connection', function(socket){
     var request = socket.request;
     console.log((new Date()) + ' Connection accepted.');
     if (match = request.headers.referer.match('/wetty/docker/.+$')) {
-        dockerhost = match[0].replace('/wetty/docker/', '') + '@';
+        dockerhost = match[0].replace('/wetty/docker/', '');
     }
 
     var term;
