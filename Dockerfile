@@ -2,7 +2,7 @@ FROM node:latest
 MAINTAINER Stefan Dimitrov <stefan@dimitrov.li>
 
 ADD . /app
-WORKDIR /app
+WORKDIR /workspace
 RUN npm install
 RUN apt-get update
 
@@ -23,4 +23,4 @@ RUN rm -rf docker/
 EXPOSE 3000
 
 ENTRYPOINT ["node"]
-CMD ["app.js", "-p", "3000"]
+CMD ["/app/app.js", "-p", "3000"]
